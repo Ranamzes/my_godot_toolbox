@@ -1,3 +1,6 @@
 [submodule "systems/footstep_system"]
 	path = systems/footstep_system
 	url = https://github.com/godot-shared-modules/footstep_system.git
+[submodule ".agent/workflows/toolbox-skill"]
+	path = .agent/workflows/toolbox-skill
+	url = https://github.com/godot-shared-modules/toolbox-skill.git
