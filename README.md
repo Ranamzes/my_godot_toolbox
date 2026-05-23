@@ -2,6 +2,27 @@
 
 Central registry of reusable Godot modules organized by **Function/Domain** in the `godot-shared-modules` organization.
 
+## Agent Workflow
+
+### 📦 Quick Install (One-Liner)
+
+To add the **Toolbox Manager** skill to your current project, run the command for your OS:
+
+**Windows (PowerShell):**
+```powershell
+New-Item -ItemType Directory -Force .agent/workflows; Invoke-WebRequest https://raw.githubusercontent.com/godot-shared-modules/toolbox-skill/main/toolbox.md -OutFile .agent/workflows/toolbox.md
+```
+
+**Linux / Mac / Bash:**
+```bash
+mkdir -p .agent/workflows && curl -o .agent/workflows/toolbox.md https://raw.githubusercontent.com/godot-shared-modules/toolbox-skill/main/toolbox.md
+```
+
+This downloads the latest Skill from the shared repository.
+
+### Usage
+Use `/toolbox` slash command to invoke the agent skill (`.agent/workflows/toolbox.md`).
+
 ## Module Structure
 
 Modules are categorized into folders like `systems/`, `ui/`, `mechanics/`.
@@ -78,7 +99,3 @@ cd <module_path>
 git checkout main           # avoid detached HEAD!
 git add . && git commit -m "fix: description" && git push
 ```
-
-## Agent Workflow
-
-Use `/toolbox` slash command to invoke the agent skill (`.agent/workflows/toolbox.md`).
