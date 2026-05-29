@@ -1,0 +1,18 @@
+# Godot-specific files
+.godot/
+.import/
+*.translation
+
+# Mono/C# specific
+.mono/
+data_*/
+mono_crash.*
+
+# Exports
+build/
+dist/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+*.tmp
