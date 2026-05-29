@@ -81,16 +81,27 @@ If Godot-MCP was installed, remind the user:
 
 ## 4. Interactive Jam Configuration Workflow (For the Agent)
 
-When the **jam** preset is selected, you **MUST** follow this workflow:
+When the **jam** preset is selected, you **MUST** follow this autonomous workflow to minimize user effort:
 
-1. **Ask for Jam Details**:
-   Clarify with the user:
-   * "Which game jam is this project for? (Jam Name)"
-   * "What is the itch.io link to the jam's page?"
-   * "When is the deadline of the jam? (Specify date, time, and timezone so I can convert it to UTC Unix timestamp)"
+1. **Ask for the Jam URL**:
+   Ask the user for the Itch.io link to their game jam. E.g., *"Could you please share the link to your game jam on itch.io?"*
 
-2. **Run setup with Jam arguments**:
-   Once you obtain the deadline and info, parse the deadline into ISO 8601 format (e.g. `YYYY-MM-DDTHH:MM:SS` or `2026-06-15T18:00:00`) and pass them to the initialization script:
+2. **Autonomous Jam Scraping**:
+   - Immediately invoke the `read_url_content` tool to fetch and read the game jam page's contents.
+   - Scan the page metadata, HTML, or markdown text to extract:
+     * The **Jam Title** (e.g. `<title>`, `DinoJam 5`, etc.)
+     * The **Jam Deadline / End Date** (Look for date elements, countdown data-targets, or strings specifying when the jam ends. Convert the found local/UTC date to a standard ISO 8601 format like `YYYY-MM-DDTHH:MM:SS` in UTC or with an offset).
+   - Once retrieved, present the discovered values to the user for quick verification:
+     > *"I checked the jam page and found the following details:*
+     > * *Jam Name: **DinoJam 5***
+     > * *Deadline: **June 15, 2026 at 18:00 UTC** (formatted as `2026-06-15T18:00:00`)*
+     >
+     > *Please let me know if these details are correct or if you'd like me to adjust them! Once confirmed, I will automatically download and configure the countdown plugin."*
+   - If you cannot fetch the page or fail to find these details autonomously, politely ask the user to provide them:
+     > *"I successfully visited the page but couldn't locate the exact deadline. Could you please tell me the jam name and the deadline date/time?"*
+
+3. **Run setup with Jam arguments**:
+   Once the details are confirmed by the user, pass them directly to the initialization script to preconfigure the project settings:
    ```bash
    python3 my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/initialize.py \
      --path /Users/remart/Projects/games/my_new_game \
@@ -99,9 +110,9 @@ When the **jam** preset is selected, you **MUST** follow this workflow:
      --jam-url "https://itch.io/jam/dinojam5" \
      --jam-deadline "2026-06-15T18:00:00"
    ```
-   This will automatically configure `project.godot` to initialize the countdown plugin under `res://addons/jamcountdown/jam_countdown.tscn` perfectly on startup.
+   This automatically downloads your improved fork, enables it, and preconfigures `res://addons/jamcountdown/jam_countdown.tscn` perfectly in `project.godot`.
 
-3. **Fallback Configuration**:
+4. **Fallback Configuration**:
    If the project has already been initialized, you can dynamically configure the jam countdown at any time by running `jam_setup.py`:
    ```bash
    python3 my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/jam_setup.py \
