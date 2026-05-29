@@ -31,6 +31,7 @@ def main():
     
     # Создаем базовые директории в проекте
     folders = [
+        ".agent",
         "src/autoloads",
         "scenes",
         "scripts",
@@ -45,10 +46,11 @@ def main():
     project_godot_path = os.path.join(project_path, "project.godot")
     base_template_dir = os.path.join(TEMPLATES_DIR, "base")
     
-    # Копируем gitignore и gitattributes
+    # Копируем gitignore, gitattributes и gdignore
     shutil.copy(os.path.join(base_template_dir, "gitignore.txt"), os.path.join(project_path, ".gitignore"))
     shutil.copy(os.path.join(base_template_dir, "gitattributes.txt"), os.path.join(project_path, ".gitattributes"))
-    print("[+] Созданы .gitignore и .gitattributes")
+    shutil.copy(os.path.join(base_template_dir, "gdignore.txt"), os.path.join(project_path, ".agent", ".gdignore"))
+    print("[+] Созданы .gitignore, .gitattributes и .agent/.gdignore")
     
     # Если project.godot не существует, создаем его на основе базового шаблона
     if not os.path.exists(project_godot_path):
