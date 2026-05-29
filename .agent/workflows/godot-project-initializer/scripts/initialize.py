@@ -77,31 +77,20 @@ def main():
     # 4. Настройка автозагрузок (Autoloads)
     autoloads = {}
     
-    # EventBus всегда включен (так как base синглтон)
+    # Скопируем базовые синглтоны (EventBus и SoundManager)
+    # EventBus
     event_bus_src = os.path.join(base_template_dir, "autoloads", "event_bus.gd")
     event_bus_dest = os.path.join(project_path, "src", "autoloads", "event_bus.gd")
     shutil.copy(event_bus_src, event_bus_dest)
     autoloads["EventBus"] = "*res://src/autoloads/event_bus.gd"
-    print("[+] Скопирован EventBus.gd")
     
-    # Если выбран пресет 'jam', добавляем SceneManager и SoundManager
-    if "jam" in presets:
-        jam_template_dir = os.path.join(TEMPLATES_DIR, "jam")
-        
-        # SceneManager
-        shutil.copy(
-            os.path.join(jam_template_dir, "autoloads", "scene_manager.gd"),
-            os.path.join(project_path, "src", "autoloads", "scene_manager.gd")
-        )
-        autoloads["SceneManager"] = "*res://src/autoloads/scene_manager.gd"
-        
-        # SoundManager
-        shutil.copy(
-            os.path.join(jam_template_dir, "autoloads", "sound_manager.gd"),
-            os.path.join(project_path, "src", "autoloads", "sound_manager.gd")
-        )
-        autoloads["SoundManager"] = "*res://src/autoloads/sound_manager.gd"
-        print("[+] Скопированы SceneManager.gd и SoundManager.gd")
+    # SoundManager
+    sound_manager_src = os.path.join(base_template_dir, "autoloads", "sound_manager.gd")
+    sound_manager_dest = os.path.join(project_path, "src", "autoloads", "sound_manager.gd")
+    shutil.copy(sound_manager_src, sound_manager_dest)
+    autoloads["SoundManager"] = "*res://src/autoloads/sound_manager.gd"
+    
+    print("[+] Скопированы базовые синглтоны (EventBus.gd, SoundManager.gd)")
         
     # Регистрируем автозагрузки в project.godot
     for name, res_path in autoloads.items():

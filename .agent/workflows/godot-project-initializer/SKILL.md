@@ -16,7 +16,7 @@ You **MUST** begin by conducting a brief interactive poll in the user's preferre
 Ask the following questions to help select the best presets and configuration:
 1. **Game Description**: "Briefly describe your game idea (genre, core loop)."
 2. **Visual Style & Presets**: "What is the visual style? If it is 2D pixel-art, we will apply the `2d` preset (enabling Nearest texture filtering, gl_compatibility rendering, and Pixel Snap). Otherwise, we will set up the base Forward+ renderer."
-3. **Game Jam Preset**: "Are you building this for a game jam? If yes, we'll apply the `jam` preset to configure standard WASD/Arrows inputs, a smooth screen fade transitions manager (`SceneManager`), and a pooled sound player (`SoundManager`)."
+3. **Game Jam Preset**: "Are you building this for a game jam? If yes, we'll apply the `jam` preset to configure standard WASD/Arrows inputs."
 4. **Godot-MCP Integration**: "Would you like to install the `godot_mcp` addon? This will allow me to see your scene trees, add/configure nodes, and edit GDScripts in real-time while the project is open in the Godot Editor."
 5. **Toolbox Systems**: "Do you want to immediately copy any ready-made systems from your `my_godot_toolbox` (such as `footstep_system`)?"
 
@@ -51,7 +51,7 @@ Check that:
 4. Auto-loaded singletons (`event_bus.gd`, etc.) are placed in `src/autoloads/` and configured.
 
 ### Step 3: Explain Structure to the User
-Explain the generated structure to the user in their language. Highlight the available autoloads (`EventBus` for events, `SceneManager` for transitions, `SoundManager` for audio) and how to run the game.
+Explain the generated structure to the user in their language. Highlight the available autoloads (`EventBus` for events, `SoundManager` for audio) and how to run the game.
 
 If Godot-MCP was installed, remind the user:
 > "I have installed and enabled the **Godot-MCP** plugin in your project. Open this project in the Godot 4 Editor. Once it's open, I will be able to use the `godot-editor` MCP server tools to interact with your live scene tree, create nodes, and tweak scripts directly from our chat!"
@@ -62,7 +62,7 @@ If Godot-MCP was installed, remind the user:
 
 ### Base Preset
 * Sets up the standard directory layout.
-* Copies and registers the **`EventBus`** singleton (`res://src/autoloads/event_bus.gd`). Use it to decouple game events.
+* Copies and registers **`EventBus`** (`res://src/autoloads/event_bus.gd`) and **`SoundManager`** (`res://src/autoloads/sound_manager.gd`) singletons to support global events and pooled audio.
 * Generates optimized `.gitignore` and `.gitattributes` (Git LFS enabled).
 
 ### 2D Preset
@@ -72,5 +72,3 @@ If Godot-MCP was installed, remind the user:
 
 ### Jam Preset
 * Sets up standard input map actions WASD + Arrow Keys (`move_left`, `move_right`, `move_up`, `move_down`), Spacebar (`jump`), and E/LMB (`action`).
-* Copies and registers **`SceneManager`** (`res://src/autoloads/scene_manager.gd`) for smooth transitions. Call it using `SceneManager.change_scene("path")`.
-* Copies and registers **`SoundManager`** (`res://src/autoloads/sound_manager.gd`) for pooled SFX/Music execution. Call it using `SoundManager.play_sfx(sound_stream)`.
