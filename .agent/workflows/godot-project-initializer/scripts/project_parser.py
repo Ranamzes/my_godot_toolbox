@@ -5,8 +5,8 @@ class GodotConfigParser:
     def __init__(self, filepath=None):
         self.filepath = filepath
         self.sections = {} # {section_name: {key: value}}
-        self.section_order = [] # Список для сохранения исходного порядка секций
-        self.section_comments = {} # Комментарии и пустые строки {section_name_or_global: [lines]}
+        self.section_order = [] # List to preserve original section order
+        self.section_comments = {} # Comments and blank lines {section_name_or_global: [lines]}
         self.key_order = {} # {section_name: [key_names]}
         
         if filepath and os.path.exists(filepath):
@@ -25,13 +25,13 @@ class GodotConfigParser:
             line = lines[i]
             stripped = line.strip()
             
-            # Сохраняем пустые строки и комментарии
+            # Preserve blank lines and comments
             if not stripped or stripped.startswith(';'):
                 current_comments.append(line)
                 i += 1
                 continue
             
-            # Парсинг секции: [section]
+            # Section parsing: [section]
             section_match = re.match(r'^\[([\w./]+)\]$', stripped)
             if section_match:
                 current_section = section_match.group(1)
@@ -46,13 +46,13 @@ class GodotConfigParser:
                 i += 1
                 continue
             
-            # Парсинг ключа-значения: key=value
+            # Key-value parsing: key=value
             if '=' in line:
                 key, val = line.split('=', 1)
                 key = key.strip()
                 val = val.strip()
                 
-                # Проверяем баланс скобок для многострочных значений
+                # Check bracket balance for multiline values
                 open_brackets = val.count('{') + val.count('[') + val.count('(')
                 close_brackets = val.count('}') + val.count(']') + val.count(')')
                 
@@ -81,7 +81,7 @@ class GodotConfigParser:
             i += 1
 
     def set_value(self, section, key, value):
-        """Устанавливает значение для ключа в секции. Создает секцию/ключ при отсутствии."""
+        """Sets key value in section. Creates section/key if missing."""
         if section not in self.sections:
             self.sections[section] = {}
             self.section_order.append(section)
@@ -97,38 +97,38 @@ class GodotConfigParser:
         return default
 
     def merge_packed_array(self, section, key, new_elements):
-        """Сливает элементы в PackedStringArray, предотвращая дубликаты."""
+        """Merges elements into PackedStringArray, preventing duplicates."""
         current_val = self.get_value(section, key)
         elements = set()
         
         if current_val:
-            # Извлекаем элементы из PackedStringArray("elem1", "elem2")
+            # Extract elements from PackedStringArray("elem1", "elem2")
             match = re.match(r'^PackedStringArray\((.*)\)$', current_val)
             if match:
                 raw_elems = match.group(1).strip()
                 if raw_elems:
-                    # Разделяем по запятым, учитывая кавычки
+                    # Split by comma, taking quotes into account
                     for part in re.split(r',\s*', raw_elems):
-                        part = part.strip().strip('"').strip("'")
-                        if part:
-                            elements.add(part)
+                      part = part.strip().strip('"').strip("'")
+                      if part:
+                          elements.add(part)
         
-        # Добавляем новые элементы
+        # Add new elements
         for elem in new_elements:
             elements.add(elem)
             
-        # Формируем новую строку
+        # Form new string
         sorted_elements = sorted(list(elements))
         array_str = f'PackedStringArray(' + ', '.join(f'"{el}"' for el in sorted_elements) + ')'
         self.set_value(section, key, array_str)
 
     def merge_with_ini(self, other_filepath):
-        """Интегрирует настройки из другого INI-подобного файла."""
+        """Merges configurations from another INI-like file."""
         other = GodotConfigParser(other_filepath)
         for section, keys in other.sections.items():
             for key, val in keys.items():
                 if val.startswith('PackedStringArray('):
-                    # Извлекаем элементы для слияния массивов
+                    # Extract elements for merging arrays
                     match = re.match(r'^PackedStringArray\((.*)\)$', val)
                     if match:
                         raw_elems = match.group(1).strip()
@@ -142,18 +142,18 @@ class GodotConfigParser:
     def write(self, filepath):
         with open(filepath, 'w', encoding='utf-8') as f:
             for section in self.section_order:
-                # Записываем сохраненные комментарии перед секцией
+                # Write preserved comments before section
                 if section in self.section_comments:
                     for comment in self.section_comments[section]:
                         f.write(comment)
                 
-                # Записываем заголовок секции (кроме виртуальной _global)
+                # Write section header (except virtual _global)
                 if section != '_global':
                     f.write(f'[{section}]\n')
                 
-                # Записываем ключи и значения
+                # Write keys and values
                 for key in self.key_order[section]:
                     val = self.sections[section][key]
                     f.write(f'{key}={val}\n')
                 
-                f.write('\n') # Пустая строка между секциями
+                f.write('\n') # Blank line between sections

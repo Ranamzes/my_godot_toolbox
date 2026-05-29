@@ -74,4 +74,39 @@ If Godot-MCP was installed, remind the user:
 
 ### Jam Preset
 * Sets up standard input map actions WASD + Arrow Keys (`move_left`, `move_right`, `move_up`, `move_down`), Spacebar (`jump`), and E/LMB (`action`).
-* Automatically downloads, installs, and enables the **Game Jam Countdown** editor plugin (by Andres Gamboa & Skar0ps / Swaylle) in your project to keep track of the jam's deadline right from your editor toolbar.
+* Automatically downloads, installs, and enables the timezone-safe **Game Jam Countdown** editor plugin from the user's fork (`https://github.com/Ranamzes/JamCountdown`) in your project to keep track of the jam's deadline right from your editor toolbar.
+* Supports automatic preconfiguration of the countdown via command-line arguments.
+
+---
+
+## 4. Interactive Jam Configuration Workflow (For the Agent)
+
+When the **jam** preset is selected, you **MUST** follow this workflow:
+
+1. **Ask for Jam Details**:
+   Clarify with the user:
+   * "Which game jam is this project for? (Jam Name)"
+   * "What is the itch.io link to the jam's page?"
+   * "When is the deadline of the jam? (Specify date, time, and timezone so I can convert it to UTC Unix timestamp)"
+
+2. **Run setup with Jam arguments**:
+   Once you obtain the deadline and info, parse the deadline into ISO 8601 format (e.g. `YYYY-MM-DDTHH:MM:SS` or `2026-06-15T18:00:00`) and pass them to the initialization script:
+   ```bash
+   python3 my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/initialize.py \
+     --path /Users/remart/Projects/games/my_new_game \
+     --presets base,2d,jam \
+     --jam-name "DINOJAM 5" \
+     --jam-url "https://itch.io/jam/dinojam5" \
+     --jam-deadline "2026-06-15T18:00:00"
+   ```
+   This will automatically configure `project.godot` to initialize the countdown plugin under `res://addons/jamcountdown/jam_countdown.tscn` perfectly on startup.
+
+3. **Fallback Configuration**:
+   If the project has already been initialized, you can dynamically configure the jam countdown at any time by running `jam_setup.py`:
+   ```bash
+   python3 my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/jam_setup.py \
+     /Users/remart/Projects/games/my_new_game \
+     --name "DINOJAM 5" \
+     --url "https://itch.io/jam/dinojam5" \
+     --deadline "2026-06-15T18:00:00"
+   ```

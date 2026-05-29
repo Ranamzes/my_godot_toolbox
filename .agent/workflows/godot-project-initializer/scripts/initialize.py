@@ -3,7 +3,7 @@ import sys
 import argparse
 import shutil
 
-# Добавляем родительский каталог в пути импорта для доступа к вспомогательным модулям
+# Add parent directory to import paths to access helper modules
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(SCRIPT_DIR)
 
@@ -14,11 +14,14 @@ from jam_setup import install_jam_countdown
 TEMPLATES_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "templates")
 
 def main():
-    parser = argparse.ArgumentParser(description="Автоматический сборщик и инициализатор проектов Godot 4")
-    parser.add_argument("--path", required=True, help="Путь к создаваемому/существующему проекту Godot")
-    parser.add_argument("--presets", default="base", help="Список пресетов через запятую (например, base,2d,jam)")
-    parser.add_argument("--mcp", action="store_true", help="Включить и установить интеграцию с Godot-MCP")
-    parser.add_argument("--ai", default="antigravity", help="ИИ-среда для подготовки служебных папок (antigravity, cursor, windsurf, vscode, all)")
+    parser = argparse.ArgumentParser(description="Automated project builder and initializer for Godot 4")
+    parser.add_argument("--path", required=True, help="Path to the created/existing Godot project folder")
+    parser.add_argument("--presets", default="base", help="Comma-separated list of presets (e.g. base,2d,jam)")
+    parser.add_argument("--mcp", action="store_true", help="Enable and install Godot-MCP integration")
+    parser.add_argument("--ai", default="antigravity", help="Target AI environments to prepare folders for (antigravity, cursor, windsurf, vscode, all)")
+    parser.add_argument("--jam-name", help="Optional Game Jam Title to preconfigure")
+    parser.add_argument("--jam-url", help="Optional Itch.io jam page URL to preconfigure")
+    parser.add_argument("--jam-deadline", help="Optional Jam deadline in ISO 8601 format (e.g. 2026-06-15T18:00:00)")
     
     args = parser.parse_args()
     
@@ -26,14 +29,14 @@ def main():
     presets = [p.strip().lower() for p in args.presets.split(",")]
     selected_ais = [a.strip().lower() for a in args.ai.split(",")]
     
-    print(f"[*] Инициализация Godot проекта в: {project_path}")
-    print(f"[*] Выбранные пресеты: {', '.join(presets)}")
-    print(f"[*] Целевые ИИ-среды: {', '.join(selected_ais)}")
+    print(f"[*] Initializing Godot project at: {project_path}")
+    print(f"[*] Selected presets: {', '.join(presets)}")
+    print(f"[*] Target AI environments: {', '.join(selected_ais)}")
     
-    # 1. Создание каталога проекта
+    # 1. Project directory creation
     os.makedirs(project_path, exist_ok=True)
     
-    # Создаем базовые директории в проекте
+    # Create base directories in project
     folders = [
         "src/autoloads",
         "scenes",
@@ -45,16 +48,16 @@ def main():
     for folder in folders:
         os.makedirs(os.path.join(project_path, folder), exist_ok=True)
         
-    # 2. Инициализация Git-файлов и базового project.godot
+    # 2. Initialize Git files and base project.godot
     project_godot_path = os.path.join(project_path, "project.godot")
     base_template_dir = os.path.join(TEMPLATES_DIR, "base")
     
-    # Копируем gitignore и gitattributes
+    # Copy gitignore and gitattributes
     shutil.copy(os.path.join(base_template_dir, "gitignore.txt"), os.path.join(project_path, ".gitignore"))
     shutil.copy(os.path.join(base_template_dir, "gitattributes.txt"), os.path.join(project_path, ".gitattributes"))
-    print("[+] Созданы .gitignore и .gitattributes")
+    print("[+] Created .gitignore and .gitattributes")
     
-    # Создаем служебные папки ИИ и копируем gdignore
+    # Create AI service folders and copy gdignore
     ai_dirs = {
         "antigravity": ".agent",
         "cursor": ".cursor",
@@ -66,19 +69,19 @@ def main():
             ai_folder_path = os.path.join(project_path, folder_name)
             os.makedirs(ai_folder_path, exist_ok=True)
             shutil.copy(os.path.join(base_template_dir, "gdignore.txt"), os.path.join(ai_folder_path, ".gdignore"))
-            print(f"[+] Создана служебная папка ИИ: {folder_name} с .gdignore")
+            print(f"[+] Created AI service folder: {folder_name} with .gdignore")
     
-    # Если project.godot не существует, создаем его на основе базового шаблона
+    # If project.godot does not exist, create it from base template
     if not os.path.exists(project_godot_path):
         shutil.copy(os.path.join(base_template_dir, "project.godot.ini"), project_godot_path)
-        # Настраиваем имя проекта по названию папки
+        # Set project name based on folder name
         project_name = os.path.basename(os.path.normpath(project_path))
         config = GodotConfigParser(project_godot_path)
         config.set_value("application", "config/name", f'"{project_name}"')
         config.write(project_godot_path)
-        print(f"[+] Создан новый project.godot для проекта: {project_name}")
+        print(f"[+] Created new project.godot for project: {project_name}")
         
-    # 3. Применяем конфигурации пресетов (2D, Jam)
+    # 3. Apply preset configurations (2D, Jam)
     config = GodotConfigParser(project_godot_path)
     
     for preset in presets:
@@ -89,13 +92,13 @@ def main():
         preset_ini = os.path.join(preset_dir, "project.godot.ini")
         
         if os.path.exists(preset_ini):
-            print(f"[*] Применение конфигурации пресета '{preset}'...")
+            print(f"[*] Applying configuration for preset '{preset}'...")
             config.merge_with_ini(preset_ini)
             
-    # 4. Настройка автозагрузок (Autoloads)
+    # 4. Configure Autoloads
     autoloads = {}
     
-    # Скопируем базовые синглтоны (EventBus и SoundManager)
+    # Copy base singletons (EventBus and SoundManager)
     # EventBus
     event_bus_src = os.path.join(base_template_dir, "autoloads", "event_bus.gd")
     event_bus_dest = os.path.join(project_path, "src", "autoloads", "event_bus.gd")
@@ -108,29 +111,29 @@ def main():
     shutil.copy(sound_manager_src, sound_manager_dest)
     autoloads["SoundManager"] = "*res://src/autoloads/sound_manager.gd"
     
-    print("[+] Скопированы базовые синглтоны (EventBus.gd, SoundManager.gd)")
+    print("[+] Copied base singletons (EventBus.gd, SoundManager.gd)")
         
-    # Регистрируем автозагрузки в project.godot
+    # Register autoloads in project.godot
     for name, res_path in autoloads.items():
         config.set_value("autoload", name, f'"{res_path}"')
         
     config.write(project_godot_path)
-    print("[+] Автозагрузки зарегистрированы в project.godot")
+    print("[+] Autoloads registered in project.godot")
     
-    # 5. Установка Godot-MCP (если запрошено)
+    # 5. Install Godot-MCP (if requested)
     if args.mcp:
         install_godot_mcp(project_path)
         
-    # 6. Установка плагина Game Jam Countdown (если выбран пресет jam)
+    # 6. Install Game Jam Countdown plugin (if jam preset selected)
     if "jam" in presets:
-        install_jam_countdown(project_path)
+        install_jam_countdown(project_path, jam_name=args.jam_name, jam_url=args.jam_url, jam_deadline=args.jam_deadline)
         
-    print("\n[+] Инициализация проекта успешно завершена!")
-    print("Доступная структура проекта:")
-    print(" - res://src/autoloads/ (Глобальные синглтоны)")
-    print(" - res://scenes/ (Игровые сцены)")
-    print(" - res://scripts/ (Логика и компоненты)")
-    print(" - res://assets/ (Текстуры, Звуки, Музыка)")
+    print("\n[+] Project initialization completed successfully!")
+    print("Available project structure:")
+    print(" - res://src/autoloads/ (Global singletons)")
+    print(" - res://scenes/ (Game scenes)")
+    print(" - res://scripts/ (Logic and components)")
+    print(" - res://assets/ (Textures, Sounds, Music)")
 
 if __name__ == "__main__":
     main()
