@@ -30,17 +30,19 @@ Once the user confirms the desired setup:
 Invoke the `initialize.py` script with the chosen flags. The script is located at:
 `my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/initialize.py`
 
-Example run for a 2D Game Jam project with Godot-MCP support:
+Example run for a 2D Game Jam project with Godot-MCP and Antigravity + Cursor workspace support:
 ```bash
 python3 my_godot_toolbox/.agent/workflows/godot-project-initializer/scripts/initialize.py \
   --path /Users/remart/Projects/games/my_new_game \
   --presets base,2d,jam \
+  --ai antigravity,cursor \
   --mcp
 ```
 
 ### Script Arguments:
 * `--path`: Absolute path to the new/existing Godot project folder.
 * `--presets`: Comma-separated list of presets (`base`, `2d`, `jam`).
+* `--ai`: Comma-separated list of target AI environments to prepare directories for (`antigravity`, `cursor`, `windsurf`, `vscode`, `all`). Creates matching folders (e.g., `.agent`, `.cursor`) and automatically places a `.gdignore` file inside each one to prevent Godot imports.
 * `--mcp`: Flag. If set, downloads the `ee0pdt/Godot-MCP` editor addon, unpacks it into `addons/godot_mcp`, and registers it in `project.godot`.
 
 ### Step 2: Verify Created Files

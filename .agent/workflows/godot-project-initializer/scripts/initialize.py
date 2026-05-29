@@ -17,21 +17,23 @@ def main():
     parser.add_argument("--path", required=True, help="Путь к создаваемому/существующему проекту Godot")
     parser.add_argument("--presets", default="base", help="Список пресетов через запятую (например, base,2d,jam)")
     parser.add_argument("--mcp", action="store_true", help="Включить и установить интеграцию с Godot-MCP")
+    parser.add_argument("--ai", default="antigravity", help="ИИ-среда для подготовки служебных папок (antigravity, cursor, windsurf, vscode, all)")
     
     args = parser.parse_args()
     
     project_path = os.path.abspath(args.path)
     presets = [p.strip().lower() for p in args.presets.split(",")]
+    selected_ais = [a.strip().lower() for a in args.ai.split(",")]
     
     print(f"[*] Инициализация Godot проекта в: {project_path}")
     print(f"[*] Выбранные пресеты: {', '.join(presets)}")
+    print(f"[*] Целевые ИИ-среды: {', '.join(selected_ais)}")
     
     # 1. Создание каталога проекта
     os.makedirs(project_path, exist_ok=True)
     
     # Создаем базовые директории в проекте
     folders = [
-        ".agent",
         "src/autoloads",
         "scenes",
         "scripts",
@@ -46,11 +48,24 @@ def main():
     project_godot_path = os.path.join(project_path, "project.godot")
     base_template_dir = os.path.join(TEMPLATES_DIR, "base")
     
-    # Копируем gitignore, gitattributes и gdignore
+    # Копируем gitignore и gitattributes
     shutil.copy(os.path.join(base_template_dir, "gitignore.txt"), os.path.join(project_path, ".gitignore"))
     shutil.copy(os.path.join(base_template_dir, "gitattributes.txt"), os.path.join(project_path, ".gitattributes"))
-    shutil.copy(os.path.join(base_template_dir, "gdignore.txt"), os.path.join(project_path, ".agent", ".gdignore"))
-    print("[+] Созданы .gitignore, .gitattributes и .agent/.gdignore")
+    print("[+] Созданы .gitignore и .gitattributes")
+    
+    # Создаем служебные папки ИИ и копируем gdignore
+    ai_dirs = {
+        "antigravity": ".agent",
+        "cursor": ".cursor",
+        "windsurf": ".windsurf",
+        "vscode": ".vscode"
+    }
+    for ai_key, folder_name in ai_dirs.items():
+        if ai_key in selected_ais or "all" in selected_ais:
+            ai_folder_path = os.path.join(project_path, folder_name)
+            os.makedirs(ai_folder_path, exist_ok=True)
+            shutil.copy(os.path.join(base_template_dir, "gdignore.txt"), os.path.join(ai_folder_path, ".gdignore"))
+            print(f"[+] Создана служебная папка ИИ: {folder_name} с .gdignore")
     
     # Если project.godot не существует, создаем его на основе базового шаблона
     if not os.path.exists(project_godot_path):
