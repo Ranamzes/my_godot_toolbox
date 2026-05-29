@@ -9,6 +9,7 @@ sys.path.append(SCRIPT_DIR)
 
 from project_parser import GodotConfigParser
 from mcp_setup import install_godot_mcp
+from jam_setup import install_jam_countdown
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "templates")
 
@@ -119,6 +120,10 @@ def main():
     # 5. Установка Godot-MCP (если запрошено)
     if args.mcp:
         install_godot_mcp(project_path)
+        
+    # 6. Установка плагина Game Jam Countdown (если выбран пресет jam)
+    if "jam" in presets:
+        install_jam_countdown(project_path)
         
     print("\n[+] Инициализация проекта успешно завершена!")
     print("Доступная структура проекта:")

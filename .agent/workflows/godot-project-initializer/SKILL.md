@@ -74,3 +74,4 @@ If Godot-MCP was installed, remind the user:
 
 ### Jam Preset
 * Sets up standard input map actions WASD + Arrow Keys (`move_left`, `move_right`, `move_up`, `move_down`), Spacebar (`jump`), and E/LMB (`action`).
+* Automatically downloads, installs, and enables the **Game Jam Countdown** editor plugin (by Andres Gamboa & Skar0ps / Swaylle) in your project to keep track of the jam's deadline right from your editor toolbar.
