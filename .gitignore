@@ -23,3 +23,5 @@ Desktop.ini
 
 # User requested
 .history/
+**/__pycache__/
+
