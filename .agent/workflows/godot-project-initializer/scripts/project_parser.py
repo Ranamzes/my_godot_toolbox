@@ -17,50 +17,68 @@ class GodotConfigParser:
         current_comments = []
         
         with open(filepath, 'r', encoding='utf-8') as f:
-            for line in f:
-                stripped = line.strip()
+            lines = f.readlines()
+            
+        i = 0
+        n = len(lines)
+        while i < n:
+            line = lines[i]
+            stripped = line.strip()
+            
+            # Сохраняем пустые строки и комментарии
+            if not stripped or stripped.startswith(';'):
+                current_comments.append(line)
+                i += 1
+                continue
+            
+            # Парсинг секции: [section]
+            section_match = re.match(r'^\[([\w./]+)\]$', stripped)
+            if section_match:
+                current_section = section_match.group(1)
+                if current_section not in self.sections:
+                    self.sections[current_section] = {}
+                    self.section_order.append(current_section)
+                    self.key_order[current_section] = []
                 
-                # Сохраняем пустые строки и комментарии
-                if not stripped or stripped.startswith(';'):
-                    current_comments.append(line)
-                    continue
+                if current_comments:
+                    self.section_comments[current_section] = current_comments
+                    current_comments = []
+                i += 1
+                continue
+            
+            # Парсинг ключа-значения: key=value
+            if '=' in line:
+                key, val = line.split('=', 1)
+                key = key.strip()
+                val = val.strip()
                 
-                # Парсинг секции: [section]
-                section_match = re.match(r'^\[([\w./]+)\]$', stripped)
-                if section_match:
-                    current_section = section_match.group(1)
-                    if current_section not in self.sections:
-                        self.sections[current_section] = {}
-                        self.section_order.append(current_section)
-                        self.key_order[current_section] = []
-                    
-                    if current_comments:
-                        self.section_comments[current_section] = current_comments
-                        current_comments = []
-                    continue
+                # Проверяем баланс скобок для многострочных значений
+                open_brackets = val.count('{') + val.count('[') + val.count('(')
+                close_brackets = val.count('}') + val.count(']') + val.count(')')
                 
-                # Парсинг ключа-значения: key=value
-                if '=' in line:
-                    key, val = line.split('=', 1)
-                    key = key.strip()
-                    val = val.strip()
+                while open_brackets > close_brackets and i + 1 < n:
+                    i += 1
+                    next_line = lines[i]
+                    val += '\n' + next_line.rstrip()
+                    open_brackets += next_line.count('{') + next_line.count('[') + next_line.count('(')
+                    close_brackets += next_line.count('}') + next_line.count(']') + next_line.count(')')
+                
+                if current_section is None:
+                    global_sec = '_global'
+                    if global_sec not in self.sections:
+                        self.sections[global_sec] = {}
+                        self.section_order.append(global_sec)
+                        self.key_order[global_sec] = []
+                    current_section = global_sec
+                
+                self.sections[current_section][key] = val
+                if key not in self.key_order[current_section]:
+                    self.key_order[current_section].append(key)
                     
-                    if current_section is None:
-                        # Глобальные настройки до первой секции (например, config_version)
-                        global_sec = '_global'
-                        if global_sec not in self.sections:
-                            self.sections[global_sec] = {}
-                            self.section_order.append(global_sec)
-                            self.key_order[global_sec] = []
-                        current_section = global_sec
-                    
-                    self.sections[current_section][key] = val
-                    if key not in self.key_order[current_section]:
-                        self.key_order[current_section].append(key)
-                        
-                    if current_comments:
-                        # Привязываем комментарии к ключу, если нужно (упростим: просто сохраняем)
-                        current_comments = []
+                if current_comments:
+                    current_comments = []
+            
+            i += 1
 
     def set_value(self, section, key, value):
         """Устанавливает значение для ключа в секции. Создает секцию/ключ при отсутствии."""
